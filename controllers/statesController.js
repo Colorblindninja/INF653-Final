@@ -96,10 +96,10 @@ const getRandomFunFact = async (req, res) => {
 
 const createfunFact = async (req, res) => {
 req.params.state = req.params.state.toUpperCase();
-  if (!req?.body.funfacts) {
-    return res.status(400).json({ message: "fun facts must is required and must be an array" });
+  if (!req?.body.funfacts || !Array.isArray(req.body.funfacts)) {
+    return res.status(400).json({ message: "fun facts parameter is required and it must be an array" });
   }
-
+  ;
   const state = await StateFunFacts.findOne({ stateCode: req.params.state }).exec();
   if (!state) {
           try {
@@ -136,7 +136,13 @@ req.params.state = req.params.state.toUpperCase();
   }
   if(state.funfacts) {
       if (state.funfacts.length >= req.body.index) {
-          state.funfacts[req.body.index-1] = req.body.funfact;
+          try {
+              state.funfacts[req.body.index-1] = req.body.funfact;
+          } catch {
+              return res
+                .status(404)
+                .json({ message: `must give a string as funfact parameter` });
+          }
       } else {
           return res
             .status(404)
